@@ -8,7 +8,7 @@ MayLang is a lightweight convention: every meaningful change ships with a **Chan
 
 > **Import note:** The Python package is `maylang_cli` (underscore) to avoid namespace conflicts. The PyPI name is `maylang-cli`. The CLI command is `may`.
 
-[![CI](https://github.com/maylang/maylang-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/maylang/maylang-cli/actions)
+[![CI](https://github.com/mayankkatulkar/maylang-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/mayankkatulkar/maylang-cli/actions)
 [![PyPI](https://img.shields.io/pypi/v/maylang-cli)](https://pypi.org/project/maylang-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -88,10 +88,10 @@ Add session caching to reduce auth latency by 40%.
 
 ---
 
-## Install
+## Installation
 
 ```bash
-# Recommended
+# Recommended (isolated install)
 pipx install maylang-cli
 
 # Or with pip
@@ -101,7 +101,7 @@ pip install maylang-cli
 For development:
 
 ```bash
-git clone https://github.com/maylang/maylang-cli.git
+git clone https://github.com/mayankkatulkar/maylang-cli.git
 cd maylang-cli
 pip install -e ".[dev]"
 ```
@@ -170,43 +170,6 @@ This updates the `version` field in your `pyproject.toml`.
 
 ---
 
-## How to Adopt in CI
-
-Add this step to your GitHub Actions workflow:
-
-```yaml
-name: MayLang Check
-
-on:
-  pull_request:
-    branches: [main]
-
-jobs:
-  maylang:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: pip install maylang-cli
-
-      - name: Validate MayLang Change Packages
-        run: may check --require changed --base origin/main --paths auth/,payments/,db/migrations/
-```
-
-For repos that want to enforce MayLang on **every** PR:
-
-```yaml
-      - run: may check --require always
-```
-
----
-
 ## Project Structure
 
 ```
@@ -267,9 +230,15 @@ maylang-cli/
 
 ---
 
-## How to Adopt in CI
+## Company Adoption: CI Snippet
 
-Add this step to your GitHub Actions workflow:
+```bash
+# In your CI pipeline:
+pipx install maylang-cli
+may check --require changed --base origin/main --paths auth/,payments/,db/migrations/
+```
+
+Or as a GitHub Actions step:
 
 ```yaml
 name: MayLang Check
@@ -293,7 +262,7 @@ jobs:
       - run: pip install maylang-cli
 
       - name: Validate MayLang Change Packages
-        run: may check --require changed --base origin/main --paths src/,db/migrations/
+        run: may check --require changed --base origin/main --paths auth/,payments/,db/migrations/
 ```
 
 For repos that want to enforce MayLang on **every** PR:
@@ -310,50 +279,32 @@ To also enforce diff blocks in the Patch section:
 
 ---
 
-## Release to PyPI
-
-### Manual Release
+## Manual PyPI Release (Option A)
 
 ```bash
-pip install build twine
+# 1. Install build tools
+python -m pip install -U build twine
+
+# 2. Build wheel + sdist
 python -m build
-twine upload dist/*
+
+# 3. Upload to TestPyPI first
+python -m twine upload --repository testpypi dist/*
+
+# 4. Verify in a fresh venv
+python -m venv /tmp/test-maylang && . /tmp/test-maylang/bin/activate
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ maylang-cli
+may --version
+deactivate && rm -rf /tmp/test-maylang
+
+# 5. Upload to production PyPI
+python -m twine upload dist/*
+
+# 6. Install from PyPI
+pipx install maylang-cli
 ```
 
-### Trusted Publishing (Recommended)
-
-Use [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/) to eliminate API tokens entirely. Add this workflow:
-
-```yaml
-name: Publish to PyPI
-
-on:
-  release:
-    types: [published]
-
-permissions:
-  id-token: write  # Required for trusted publishing
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    environment: pypi
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: pip install build
-
-      - run: python -m build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-```
-
-Configure the trusted publisher at https://pypi.org/manage/project/maylang-cli/settings/publishing/.
+See [docs/RELEASING.md](docs/RELEASING.md) for the full release checklist.
 
 ---
 

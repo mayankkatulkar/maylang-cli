@@ -18,7 +18,9 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -39,9 +41,9 @@ dev = [
 may = "maylang_cli.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/maylang/maylang-cli"
-Repository = "https://github.com/maylang/maylang-cli"
-Issues = "https://github.com/maylang/maylang-cli/issues"
+Homepage = "https://github.com/mayankkatulkar/maylang-cli"
+Repository = "https://github.com/mayankkatulkar/maylang-cli"
+Issues = "https://github.com/mayankkatulkar/maylang-cli/issues"
 
 [tool.setuptools.packages.find]
 include = ["maylang_cli*"]
