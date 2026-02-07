@@ -137,10 +137,7 @@ ok "may --help works"
 step "Smoke test: may new + may check (from wheel install)"
 
 # We're already in SMOKE_DIR, which is outside the repo
-
-# Initialize a minimal git repo
-git init --quiet .
-git commit --allow-empty -m "initial" --quiet
+# No git init needed — may check --require always only looks for maylang/*.may.md
 
 # Expect exit code 2 when no files exist
 EXIT_CODE=0

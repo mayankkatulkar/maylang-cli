@@ -56,8 +56,8 @@ trap cleanup EXIT
 cd "$SMOKE_DIR"
 
 git init --quiet .
-git config user.email "smoke@test.local"
-git config user.name "Smoke Test"
+git config user.email "ci@maylang.local"
+git config user.name "MayLang CI"
 
 # Create some "company" source files and make an initial commit
 mkdir -p auth payments docs

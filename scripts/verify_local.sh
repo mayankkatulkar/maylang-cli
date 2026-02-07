@@ -118,9 +118,7 @@ SMOKE_DIR="$(mktemp -d)"
 ORIG_DIR="$(pwd)"
 cd "$SMOKE_DIR"
 
-# Initialize a minimal git repo so git commands don't fail
-git init --quiet .
-git commit --allow-empty -m "initial" --quiet
+# No git init needed — may check --require always only looks for maylang/*.may.md
 
 EXIT_CODE=0
 may check --require always > /dev/null 2>&1 || EXIT_CODE=$?
