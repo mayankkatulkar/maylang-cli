@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maylang-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "MayLang – Explainable Change Standard CLI for reducing AI tech debt."
 readme = "README.md"
 license = {text = "MIT"}
