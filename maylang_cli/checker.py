@@ -170,6 +170,27 @@ def run_check(
                     # No path filter → any non-maylang change triggers
                     non_ml = [f for f in changed if not f.startswith("maylang/")]
                     need_maylang = len(non_ml) > 0
+
+                # When code changed under watched paths, also require that
+                # at least one maylang/*.may.md was added/modified in the
+                # same diff.  A stale file from a prior commit is not enough.
+                if need_maylang:
+                    maylang_in_diff = any(
+                        f.startswith("maylang/") and f.endswith(".may.md")
+                        for f in changed
+                    )
+                    if not maylang_in_diff:
+                        print(
+                            "\n✗ Code changed under watched paths, but no MayLang "
+                            "change package was updated (maylang/*.may.md).\n"
+                            "\n"
+                            "  Run:\n"
+                            "    may new --id MC-XXXX --slug my-change "
+                            "--scope backend --risk low --owner 'your-team'\n"
+                            "  and include it in this change.\n",
+                            file=sys.stderr,
+                        )
+                        return EXIT_MISSING
             else:
                 # git unavailable – warn and fall back to requiring
                 print(

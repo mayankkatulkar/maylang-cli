@@ -108,28 +108,44 @@ else
     fail "Expected exit 0, got $EXIT_CODE"
 fi
 
-# ── Test 4: may check --require changed with path matching ──────────────────
+# ── Test 4: may check --require changed (code change + .may.md in diff) ─────
 
-step "Test 4: may check --require changed --base HEAD~1 --paths auth/"
+step "Test 4: may check --require changed --base HEAD~1 --paths auth/ (both changed)"
 
-# Commit the MayLang file so it's part of history
-git add -A
-git commit --quiet -m "feat: add MayLang change package"
-
-# Make a new change under auth/ and commit it
+# Commit the MayLang file AND an auth/ change in the same commit so both
+# appear in the diff between HEAD~1 and HEAD.
 echo 'def logout(): pass' >> auth/login.py
 git add -A
-git commit --quiet -m "feat: add logout to auth"
+git commit --quiet -m "feat: add logout to auth (with MayLang package)"
 
-# Now HEAD~1 has the MayLang file, but HEAD changed auth/login.py.
-# Since maylang/ files exist and are valid, this should pass.
+# The diff HEAD~1..HEAD contains both auth/login.py AND maylang/*.may.md.
 EXIT_CODE=0
 may check --require changed --base HEAD~1 --paths auth/ 2>/dev/null || EXIT_CODE=$?
 
 if [ "$EXIT_CODE" -eq 0 ]; then
-    ok "may check --require changed passed (MayLang file present, exit 0)"
+    ok "may check --require changed passed (code + .may.md both in diff, exit 0)"
 else
-    fail "Expected exit 0 for --require changed with existing .may.md, got $EXIT_CODE"
+    fail "Expected exit 0 for --require changed with .may.md in diff, got $EXIT_CODE"
+fi
+
+# ── Test 4b: code changed under watched paths but .may.md NOT in diff ───────
+
+step "Test 4b: may check --require changed (code change, stale .may.md, expect exit 2)"
+
+# Make a code-only change under auth/ (no .may.md touched)
+echo '# more auth logic' >> auth/login.py
+git add -A
+git commit --quiet -m "feat: more auth changes (no MayLang update)"
+
+# The diff HEAD~1..HEAD contains only auth/login.py, NOT maylang/*.may.md.
+# Even though the .may.md exists on disk, it should fail.
+EXIT_CODE=0
+may check --require changed --base HEAD~1 --paths auth/ 2>/dev/null || EXIT_CODE=$?
+
+if [ "$EXIT_CODE" -eq 2 ]; then
+    ok "Correctly returned exit 2 (code changed, .may.md not in diff)"
+else
+    fail "Expected exit 2 for code-only change without .may.md in diff, got $EXIT_CODE"
 fi
 
 # ── Test 5: may check --require changed (no .may.md, change in auth/) ───────

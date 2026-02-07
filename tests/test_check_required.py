@@ -128,9 +128,30 @@ class TestRequireChanged:
         "maylang_cli.checker._git_changed_files",
         return_value=(["auth/login.py"], None),
     )
-    def test_changed_matching_with_valid_file_ok(
+    def test_changed_code_only_no_maylang_in_diff_returns_missing(
         self, mock_git: mock.MagicMock, tmp_path: Path
     ) -> None:
+        """Code changed under watched paths but no maylang/*.may.md in diff → EXIT_MISSING.
+
+        Even though a .may.md file exists on disk, it was not part of this change.
+        """
+        _write_valid(tmp_path)
+        code = run_check(
+            require="changed",
+            base="origin/main",
+            paths=["auth/"],
+            root=str(tmp_path),
+        )
+        assert code == EXIT_MISSING
+
+    @mock.patch(
+        "maylang_cli.checker._git_changed_files",
+        return_value=(["auth/login.py", "maylang/MC-0001-auth.may.md"], None),
+    )
+    def test_changed_matching_with_maylang_in_diff_ok(
+        self, mock_git: mock.MagicMock, tmp_path: Path
+    ) -> None:
+        """Code changed AND maylang/*.may.md is in the diff → EXIT_OK."""
         _write_valid(tmp_path)
         code = run_check(
             require="changed",
